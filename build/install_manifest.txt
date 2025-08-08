@@ -1,2 +1,0 @@
-/usr/lib/x86_64-linux-gnu/ossl-modules/oqsprovider.so
-/usr/local/include/oqs-provider/oqs_prov.h

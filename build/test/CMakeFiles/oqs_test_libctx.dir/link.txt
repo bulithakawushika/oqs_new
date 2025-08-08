@@ -1,0 +1,1 @@
+/usr/bin/cc CMakeFiles/oqs_test_libctx.dir/oqs_test_libctx.c.o CMakeFiles/oqs_test_libctx.dir/test_common.c.o -o oqs_test_libctx  /usr/lib/x86_64-linux-gnu/libcrypto.so 
