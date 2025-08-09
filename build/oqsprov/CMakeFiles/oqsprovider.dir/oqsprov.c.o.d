@@ -112,6 +112,18 @@ oqsprov/CMakeFiles/oqsprovider.dir/oqsprov.c.o: \
  /opt/liboqs/include/oqs/sig_snova.h /opt/liboqs/include/oqs/sig_stfl.h \
  /opt/liboqs/include/oqs/aes_ops.h /opt/liboqs/include/oqs/sha2_ops.h \
  /opt/liboqs/include/oqs/sha3_ops.h /opt/liboqs/include/oqs/sha3x4_ops.h \
+ /usr/include/openssl/ec.h /usr/include/openssl/ecerr.h \
+ /usr/include/openssl/x509.h /usr/include/openssl/buffer.h \
+ /usr/include/openssl/buffererr.h /usr/include/openssl/rsa.h \
+ /usr/include/openssl/rsaerr.h /usr/include/openssl/dsa.h \
+ /usr/include/openssl/dh.h /usr/include/openssl/dherr.h \
+ /usr/include/openssl/dsaerr.h /usr/include/openssl/sha.h \
+ /usr/include/openssl/x509err.h /usr/include/openssl/x509_vfy.h \
+ /usr/include/openssl/pkcs7.h /usr/include/openssl/pkcs7err.h \
+ /usr/include/openssl/ocsp.h /usr/include/openssl/http.h \
+ /usr/include/openssl/conf.h /usr/include/openssl/conferr.h \
+ /usr/include/openssl/conftypes.h /usr/include/openssl/x509v3.h \
+ /usr/include/openssl/x509v3err.h /usr/include/openssl/ocsperr.h \
  /home/bulitha/FYP/oqs-provider/oqsprov/oqs_qkd_kem.h \
  /home/bulitha/FYP/oqs-provider/oqsprov/oqsencoders.inc \
  /home/bulitha/FYP/oqs-provider/oqsprov/oqsdecoders.inc
