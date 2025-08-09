@@ -17,9 +17,11 @@
 #include <openssl/provider.h>
 #include <stdio.h>
 #include <string.h>
+#include "oqs_bb84.h"
 #include <openssl/rand.h>
 #include "oqs_prov.h"
 #include <stdint.h>
+#include "oqs_bb84.h"
 
 #ifdef OQS_ENABLE_QKD
 #include "oqs_qkd_kem.h"
@@ -389,9 +391,81 @@ static int qkd_kem_encapsulate(void *ctx, unsigned char *out, size_t *outlen,
         *secretlen = ss_len;
         return 0;
     }
+     
+    // ========== BB84 QKD SIMULATION WITH DEBUG ==========
+    printf("[BB84] Starting QKD simulation...\n");
     
-    // Generate deterministic ciphertext and shared secret for testing
-    // Use public key as seed for determinism
+    // Create BB84 context
+    OQS_BB84_CTX *bb84_ctx = oqs_bb84_new(1024);  // 1024 initial bits
+    if (bb84_ctx) {
+        printf("[BB84] Context created successfully\n");
+        
+        // Generate BB84 key
+        int gen_result = oqs_bb84_generate_key(bb84_ctx);
+        printf("[BB84] Key generation result: %d (0=success)\n", gen_result);
+        
+        if (gen_result == 0) {
+            // First, get the required key length
+            size_t qkd_key_len = 0;
+            int size_result = oqs_bb84_get_key(bb84_ctx, NULL, &qkd_key_len);
+            printf("[BB84] Required key buffer size: %zu bytes (query result: %d)\n", qkd_key_len, size_result);
+            
+            if (size_result == 0 && qkd_key_len > 0) {
+                // Allocate buffer with the actual required size
+                uint8_t *qkd_key = calloc(qkd_key_len, 1);
+                if (qkd_key) {
+                    // Now get the actual key
+                    size_t actual_len = qkd_key_len;
+                    int get_result = oqs_bb84_get_key(bb84_ctx, qkd_key, &actual_len);
+                    printf("[BB84] Get key result: %d, actual key length: %zu\n", get_result, actual_len);
+                    
+                    if (get_result == 0) {
+                        printf("[BB84] Successfully generated QKD key: %zu bytes\n", actual_len);
+                        
+                        // Print first few bytes of the key
+                        printf("[BB84] Key bytes (first 8): ");
+                        for (size_t i = 0; i < 8 && i < actual_len; i++) {
+                            printf("%02x ", qkd_key[i]);
+                        }
+                        printf("...\n");
+                        
+                        // Check for eavesdropping
+                        int eavesdropper = oqs_bb84_eavesdropper_detected(bb84_ctx);
+                        printf("[BB84] Eavesdropper detected: %s\n", eavesdropper ? "YES" : "NO");
+                        
+                        double error_rate = oqs_bb84_get_error_rate(bb84_ctx);
+                        printf("[BB84] Error rate: %.2f%%\n", error_rate * 100);
+                        
+                        // Mix QKD key into shared secret
+                        // Use minimum of actual_len and 32 bytes
+                        size_t mix_len = (actual_len < 32) ? actual_len : 32;
+                        for (size_t i = 0; i < mix_len; i++) {
+                            secret[i] ^= qkd_key[i];
+                        }
+                        printf("[BB84] Mixed %zu bytes of QKD key into shared secret\n", mix_len);
+                    } else {
+                        printf("[BB84] Failed to get key, error code: %d\n", get_result);
+                    }
+                    free(qkd_key);
+                } else {
+                    printf("[BB84] Failed to allocate key buffer\n");
+                }
+            } else {
+                printf("[BB84] Failed to query key size, result: %d, size: %zu\n", size_result, qkd_key_len);
+            }
+        } else {
+            printf("[BB84] Failed to generate key, error code: %d\n", gen_result);
+        }
+        
+        oqs_bb84_free(bb84_ctx);
+        printf("[BB84] Context freed\n");
+    } else {
+        printf("[BB84] Failed to create BB84 context\n");
+    }
+    printf("[BB84] QKD simulation complete\n");
+    // ========== END BB84 QKD SIMULATION ==========
+
+    // Continue with existing deterministic generation
     unsigned int seed = 0;
     if (kemctx->pubkey && kemctx->pubkey_len > 0) {
         for (size_t i = 0; i < 4 && i < kemctx->pubkey_len; i++) {
@@ -421,7 +495,7 @@ static int qkd_kem_encapsulate(void *ctx, unsigned char *out, size_t *outlen,
     
     return 1;
 }
-
+ 
 static int qkd_kem_decapsulate_init(void *ctx, void *key, const OSSL_PARAM params[]) {
     QKD_KEM_CTX *kemctx = (QKD_KEM_CTX *)ctx;
     
@@ -480,7 +554,7 @@ static int qkd_kem_decapsulate(void *ctx, unsigned char *out, size_t *outlen,
         }
     }
     
-    // Skip ciphertext generation to get to shared secret
+    // Skip ciphertext generation to get to shared secret (same as encapsulate)
     for (size_t i = 0; i < expected_ct_len; i++) {
         seed = seed * 1103515245 + 12345;
     }
@@ -491,6 +565,26 @@ static int qkd_kem_decapsulate(void *ctx, unsigned char *out, size_t *outlen,
         seed = seed * 1103515245 + 12345;
         out[i] = (seed >> 16) & 0xFF;
     }
+    
+    // ========== ADD BB84 QKD SIMULATION FOR DECAPSULATION ==========
+    printf("[BB84] Starting QKD simulation for decapsulation...\n");
+    OQS_BB84_CTX *bb84_ctx = oqs_bb84_new(1024);
+    if (bb84_ctx) {
+        if (oqs_bb84_generate_key(bb84_ctx) == 0) {
+            uint8_t qkd_key[32];
+            size_t qkd_key_len = sizeof(qkd_key);
+            if (oqs_bb84_get_key(bb84_ctx, qkd_key, &qkd_key_len) == 0) {
+                printf("[BB84] Generated QKD key for decapsulation: %zu bytes\n", qkd_key_len);
+                // Mix QKD key into shared secret (same as encapsulation)
+                for (size_t i = 0; i < qkd_key_len && i < 32; i++) {
+                    out[i] ^= qkd_key[i];
+                }
+                printf("[BB84] Mixed QKD key into decapsulated shared secret.\n");
+            }
+        }
+        oqs_bb84_free(bb84_ctx);
+    }
+    // ========== END BB84 QKD SIMULATION ==========
     
     *outlen = ss_len;
     return 1;

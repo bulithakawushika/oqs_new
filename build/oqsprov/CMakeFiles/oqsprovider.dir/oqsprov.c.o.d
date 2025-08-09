@@ -91,9 +91,9 @@ oqsprov/CMakeFiles/oqsprovider.dir/oqsprov.c.o: \
  /usr/include/openssl/bn.h /usr/include/openssl/bnerr.h \
  /usr/include/openssl/objectserr.h /usr/include/openssl/params.h \
  /usr/include/openssl/provider.h /usr/include/string.h \
- /usr/include/strings.h /usr/include/openssl/rand.h \
- /usr/include/openssl/randerr.h /usr/include/openssl/evp.h \
- /usr/include/openssl/evperr.h \
+ /usr/include/strings.h /home/bulitha/FYP/oqs-provider/oqsprov/oqs_bb84.h \
+ /usr/include/openssl/rand.h /usr/include/openssl/randerr.h \
+ /usr/include/openssl/evp.h /usr/include/openssl/evperr.h \
  /home/bulitha/FYP/oqs-provider/oqsprov/oqs_prov.h \
  /usr/lib/gcc/x86_64-linux-gnu/11/include/stdatomic.h \
  /opt/liboqs/include/oqs/oqs.h /opt/liboqs/include/oqs/oqsconfig.h \

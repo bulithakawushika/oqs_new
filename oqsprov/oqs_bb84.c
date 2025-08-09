@@ -260,7 +260,7 @@ int oqs_bb84_generate_key(OQS_BB84_CTX *ctx) {
 }
 
 int oqs_bb84_get_key(OQS_BB84_CTX *ctx, uint8_t *key, size_t *key_len) {
-    if (!ctx || !key || !key_len) {
+    if (!ctx || !key_len) {
         return BB84_ERROR_INVALID_PARAM;
     }
     
@@ -268,11 +268,19 @@ int oqs_bb84_get_key(OQS_BB84_CTX *ctx, uint8_t *key, size_t *key_len) {
         return BB84_ERROR_INVALID_PARAM;
     }
     
+    // If key is NULL, just return the required size
+    if (!key) {
+        *key_len = ctx->key_length;
+        return BB84_SUCCESS;  // Return success to indicate size is available
+    }
+    
+    // Check if buffer is large enough
     if (*key_len < ctx->key_length) {
         *key_len = ctx->key_length;
         return BB84_ERROR_INVALID_PARAM; // Buffer too small
     }
     
+    // Copy the key
     memcpy(key, ctx->sifted_key, ctx->key_length);
     *key_len = ctx->key_length;
     
